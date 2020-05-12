@@ -28,8 +28,6 @@ public class PlayerController : MonoBehaviour
 
     PlayerState _state = PlayerState.Idle;
 
-    
-
     void UpdateDie()
     {
 
@@ -61,6 +59,11 @@ public class PlayerController : MonoBehaviour
         // 애니메이션
         Animator anim = GetComponent<Animator>();
         anim.SetFloat("speed", 0.0f);
+    }
+
+    void OnRunEvent()
+    {
+        Debug.Log("뚜벅");
     }
 
     void Update()

@@ -392,7 +392,6 @@ GameObject:
   - component: {fileID: 1284236292}
   - component: {fileID: 1284236291}
   - component: {fileID: 1284236290}
-  - component: {fileID: 1284236294}
   m_Layer: 8
   m_Name: Cube Two
   m_TagString: Monster
@@ -474,25 +473,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!95 &1284236294
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1284236289}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: fe30cf1df0d134c49b4f83415e98500a, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &1647328555 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 847389251038116769, guid: e6993dc02dcbdc64eb98c071b8970ac8,
