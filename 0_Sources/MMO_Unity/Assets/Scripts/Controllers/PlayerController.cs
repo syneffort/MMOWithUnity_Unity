@@ -20,8 +20,7 @@ public class PlayerController : MonoBehaviour
 
         //Temp
         //Managers.Resource.Instantiate("UI/UI_Button");
-        UI_Button ui = Managers.UI.ShowPopupUI<UI_Button>();
-        Managers.UI.ClosePopupUI(ui);
+        Managers.UI.ShowPopupUI<UI_Button>();
     }
 
     public enum PlayerState
