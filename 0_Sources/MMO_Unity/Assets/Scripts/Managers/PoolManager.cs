@@ -55,6 +55,11 @@ public class PoolManager
 
             poolabe.gameObject.SetActive(true);
             poolabe.IsUsing = true;
+
+            // DontDestroyOnLoad 해제 용도
+            if (parent == null)
+                poolabe.transform.parent = Managers.Scene.CurrentScene.transform;
+
             poolabe.transform.parent = parent;
 
             return poolabe;
