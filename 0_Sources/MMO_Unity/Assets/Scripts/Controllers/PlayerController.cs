@@ -9,9 +9,22 @@ using UnityEngine.XR;
 
 public class PlayerController : MonoBehaviour
 {
-    PlayerStat _stat;
+    public enum PlayerState
+    {
+        Die,
+        Moving,
+        Idle,
+        Skill,
+    }
 
+    PlayerStat _stat;
     Vector3 _destPos;
+
+    [SerializeField]
+    PlayerState _state = PlayerState.Idle;
+
+    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
+    GameObject _lockTartget;
 
     void Start()
     {
@@ -22,17 +35,6 @@ public class PlayerController : MonoBehaviour
         Managers.Input.MouseAction -= OnMouseEvent;
         Managers.Input.MouseAction += OnMouseEvent;
     }
-
-    public enum PlayerState
-    {
-        Die,
-        Moving,
-        Idle,
-        Skill,
-    }
-
-    [SerializeField]
-    PlayerState _state = PlayerState.Idle;
 
     public PlayerState State
     {
@@ -47,15 +49,13 @@ public class PlayerController : MonoBehaviour
                 case PlayerState.Die:
                     break;
                 case PlayerState.Idle:
-                    anim.SetFloat("speed", 0.0f);
-                    anim.SetBool("attack", false);
+                    anim.CrossFade("WAIT", 0.1f);
                     break;
                 case PlayerState.Moving:
-                    anim.SetFloat("speed", _stat.MoveSpeed);
-                    anim.SetBool("attack", false);
+                    anim.CrossFade("RUN", 0.2f);
                     break;
                 case PlayerState.Skill:
-                    anim.SetBool("attack", true);
+                    anim.CrossFade("ATTACK", 0.2f, -1, 0.0f);
                     break;
             }
         }
@@ -71,6 +71,7 @@ public class PlayerController : MonoBehaviour
         // 몬스터가 사정거리 안이면 공격
         if (_lockTartget != null)
         {
+            _destPos = _lockTartget.transform.position;
             float distance = (_destPos - transform.position).magnitude;
             if (distance <= 1.0f)
             {
@@ -117,14 +118,26 @@ public class PlayerController : MonoBehaviour
 
     void UpdateSkill()
     {
-
+        if (_lockTartget != null)
+        {
+            Vector3 dir = _lockTartget.transform.position - transform.position;
+            Quaternion quat = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Lerp(transform.rotation, quat, 20 * Time.deltaTime);
+        }
     }
 
     void OnHitEvent()
     {
         Debug.Log("OnHitEvent");
 
-        State = PlayerState.Moving;
+        if (_stopSkill)
+        {
+            State = PlayerState.Idle;
+        }
+        else
+        {
+            State = PlayerState.Skill;
+        }
     }
 
     void Update()
@@ -142,6 +155,62 @@ public class PlayerController : MonoBehaviour
                 break;
             case PlayerState.Skill:
                 UpdateSkill();
+                break;
+        }
+    }
+
+    bool _stopSkill = false;
+    void OnMouseEvent(Define.MouseEvent evt)
+    {
+        switch (State)
+        {
+            case PlayerState.Idle:
+                OnMouseEvent_IdleRun(evt);
+                break;
+            case PlayerState.Moving:
+                OnMouseEvent_IdleRun(evt);
+                break;
+            case PlayerState.Skill:
+                {
+                    if (evt == Define.MouseEvent.PointerUp)
+                        _stopSkill = true;
+                }
+                break;
+        }
+    }
+
+    void OnMouseEvent_IdleRun(Define.MouseEvent evt)
+    {
+        RaycastHit hit;
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        bool raycastHit = Physics.Raycast(ray, out hit, Camera.main.farClipPlane, _mask);
+        //Debug.DrawRay(Camera.main.transform.position, ray.direction * Camera.main.farClipPlane, Color.red, 1.0f);
+
+        switch (evt)
+        {
+            case Define.MouseEvent.PointerDown:
+                {
+                    if (raycastHit)
+                    {
+                        _destPos = hit.point;
+                        State = PlayerState.Moving;
+                        _stopSkill = false;
+
+                        if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
+                            _lockTartget = hit.collider.gameObject;
+                        else
+                            _lockTartget = null;
+                    }
+                }
+                break;
+            case Define.MouseEvent.Press:
+                {
+                    if (_lockTartget == null && raycastHit)
+                        _destPos = hit.point;
+                }
+                break;
+            case Define.MouseEvent.PointerUp:
+                _stopSkill = true;
                 break;
         }
     }
@@ -174,47 +243,4 @@ public class PlayerController : MonoBehaviour
 
     //    _moveToDest = false;
     //}
-
-    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
-    GameObject _lockTartget;
-
-    void OnMouseEvent(Define.MouseEvent evt)
-    {
-        //if (evt != Define.MouseEvent.Click)
-        //    return;
-
-        if (State == PlayerState.Die)
-            return;
-
-        RaycastHit hit;
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        bool raycastHit = Physics.Raycast(ray, out hit, Camera.main.farClipPlane, _mask);
-        //Debug.DrawRay(Camera.main.transform.position, ray.direction * Camera.main.farClipPlane, Color.red, 1.0f);
-
-        switch (evt)
-        {
-            case Define.MouseEvent.PointerDown:
-                {
-                    if (raycastHit)
-                    {
-                        _destPos = hit.point;
-                        State = PlayerState.Moving;
-
-                        if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
-                            _lockTartget = hit.collider.gameObject;
-                        else
-                            _lockTartget = null;
-                    }
-                }
-                break;
-            case Define.MouseEvent.Press:
-                {
-                    if (_lockTartget != null)
-                        _destPos = _lockTartget.transform.position;
-                    else if (raycastHit)
-                        _destPos = hit.point;
-                }
-                break;
-        }
-    }
 }
