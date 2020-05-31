@@ -5795,6 +5795,8 @@ GameObject:
   - component: {fileID: 8209166309468070928}
   - component: {fileID: 8209166309468070931}
   - component: {fileID: 3493246710271794523}
+  - component: {fileID: -7995865271085136366}
+  - component: {fileID: -3168856584770155381}
   m_Layer: 0
   m_Name: UnityChan
   m_TagString: Untagged
@@ -5892,7 +5894,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38807b2473027e944b623af4a8a4cb43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IsUsing: 0
+  IsUsing: 1
+--- !u!195 &-7995865271085136366
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8209166309468070932}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &-3168856584770155381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8209166309468070932}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28e00a5d97e0a7a4aba77bf7ddd12d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _level: 0
+  _hp: 0
+  _maxHp: 0
+  _attack: 0
+  _defence: 0
+  _moveSpeed: 0
+  _exp: 0
+  _gold: 0
 --- !u!1 &8220234874234587297
 GameObject:
   m_ObjectHideFlags: 0

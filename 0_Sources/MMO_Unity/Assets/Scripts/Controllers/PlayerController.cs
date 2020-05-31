@@ -7,13 +7,14 @@ using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField]
-    float _speed = 10.0f;
+    PlayerStat _stat;
 
     Vector3 _destPos;
 
     void Start()
     {
+        _stat = gameObject.GetComponent<PlayerStat>();
+
         //Managers.Input.KeyAction -= OnKeyboard;
         //Managers.Input.KeyAction += OnKeyboard;
         Managers.Input.MouseAction -= OnMouseClicked;
@@ -25,6 +26,7 @@ public class PlayerController : MonoBehaviour
         Die,
         Moving,
         Idle,
+        Skill,
     }
 
     PlayerState _state = PlayerState.Idle;
@@ -45,7 +47,7 @@ public class PlayerController : MonoBehaviour
         {
             // TODO
             NavMeshAgent nma =  gameObject.GetOrAddComponent<NavMeshAgent>();
-            float moveDist = Mathf.Clamp(Time.deltaTime * _speed, 0, dir.magnitude);
+            float moveDist = Mathf.Clamp(Time.deltaTime * _stat.MoveSpeed, 0, dir.magnitude);
             //nma.CalculatePath
             nma.Move(dir.normalized * moveDist);
 
@@ -66,7 +68,7 @@ public class PlayerController : MonoBehaviour
 
         // 애니메이션
         Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", _speed);
+        anim.SetFloat("speed", _stat.MoveSpeed);
     }
 
     void UpdateIdle()
@@ -121,6 +123,8 @@ public class PlayerController : MonoBehaviour
     //    _moveToDest = false;
     //}
 
+    int _mask = (1 << (int)Define.Layer.Ground) | (1 << (int)Define.Layer.Monster);
+
     void OnMouseClicked(Define.MouseEvent evt)
     {
         //if (evt != Define.MouseEvent.Click)
@@ -134,10 +138,19 @@ public class PlayerController : MonoBehaviour
         Debug.DrawRay(Camera.main.transform.position, ray.direction * Camera.main.farClipPlane, Color.red, 1.0f);
 
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, Camera.main.farClipPlane, LayerMask.GetMask("Wall")))
+        if (Physics.Raycast(ray, out hit, Camera.main.farClipPlane, _mask))
         {
             _destPos = hit.point;
             _state = PlayerState.Moving;
+
+            if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
+            {
+                Debug.Log("Monster Clicked");
+            }
+            else
+            {
+                Debug.Log("Ground Clicked");
+            }
 
             //Debug.Log($"Raycast Camera @ {hit.collider.gameObject.tag}");
         }
