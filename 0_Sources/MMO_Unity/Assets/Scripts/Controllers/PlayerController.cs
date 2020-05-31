@@ -49,10 +49,10 @@ public class PlayerController : BaseController
         }
         else
         {
-            NavMeshAgent nma =  gameObject.GetOrAddComponent<NavMeshAgent>();
-            float moveDist = Mathf.Clamp(Time.deltaTime * _stat.MoveSpeed, 0, dir.magnitude);
-            //nma.CalculatePath
-            nma.Move(dir.normalized * moveDist);
+            //NavMeshAgent nma =  gameObject.GetOrAddComponent<NavMeshAgent>();
+            //float moveDist = Mathf.Clamp(Time.deltaTime * _stat.MoveSpeed, 0, dir.magnitude);
+            ////nma.CalculatePath
+            //nma.Move(dir.normalized * moveDist);
 
             Debug.DrawRay(transform.position + Vector3.up * 0.5f, dir.normalized, Color.red, 1.0f);
             if (Physics.Raycast(transform.position + Vector3.up * 0.5f, dir, 1.0f, LayerMask.GetMask("Block")))
@@ -67,6 +67,8 @@ public class PlayerController : BaseController
             //float moveDist = Mathf.Clamp(Time.deltaTime * _speed, 0, dir.magnitude);
             //transform.position += dir.normalized * moveDist;
 
+            float moveDist = Mathf.Clamp(Time.deltaTime * _stat.MoveSpeed, 0, dir.magnitude);
+            transform.position += dir.normalized * moveDist;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 10.0f * Time.deltaTime);
             //transform.LookAt(_destPos);
         }
@@ -87,9 +89,8 @@ public class PlayerController : BaseController
         if (_lockTartget != null)
         {
             Stat targetStat = _lockTartget.GetComponent<Stat>();
-            Stat myStat = gameObject.GetComponent<PlayerStat>();
+            Stat myStat = gameObject.GetComponent<Stat>();
             int damage = Mathf.Abs(myStat.Attack - targetStat.Defence);
-            Debug.Log(damage);
             targetStat.Hp -= damage;
         }
     }
