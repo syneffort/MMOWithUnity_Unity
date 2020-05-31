@@ -13,27 +13,8 @@ public class PlayerController : MonoBehaviour
 
     Vector3 _destPos;
 
-    Texture2D _attackIcon;
-    Texture2D _handIcon;
-    Vector2 _attackPos;
-    Vector2 _handPos;
-
-    enum CursorType
-    {
-        None,
-        Attack,
-        Hand,
-    }
-
-    CursorType _cursorType = CursorType.None;
-
     void Start()
     {
-        _attackIcon = Managers.Resource.Load<Texture2D>("Textures/Cursor/Attack");
-        _attackPos = new Vector2(_attackIcon.width / 5, 0);
-        _handIcon = Managers.Resource.Load<Texture2D>("Textures/Cursor/Hand");
-        _handPos = new Vector2(_handIcon.width / 3, 0);
-
         _stat = gameObject.GetComponent<PlayerStat>();
 
         //Managers.Input.KeyAction -= OnKeyboard;
@@ -50,7 +31,35 @@ public class PlayerController : MonoBehaviour
         Skill,
     }
 
+    [SerializeField]
     PlayerState _state = PlayerState.Idle;
+
+    public PlayerState State
+    {
+        get { return _state; }
+        set
+        {
+            _state = value;
+
+            Animator anim = GetComponent<Animator>();
+            switch(_state)
+            {
+                case PlayerState.Die:
+                    break;
+                case PlayerState.Idle:
+                    anim.SetFloat("speed", 0.0f);
+                    anim.SetBool("attack", false);
+                    break;
+                case PlayerState.Moving:
+                    anim.SetFloat("speed", _stat.MoveSpeed);
+                    anim.SetBool("attack", false);
+                    break;
+                case PlayerState.Skill:
+                    anim.SetBool("attack", true);
+                    break;
+            }
+        }
+    }
 
     void UpdateDie()
     {
@@ -59,10 +68,22 @@ public class PlayerController : MonoBehaviour
 
     void UpdateMoving()
     {
+        // 몬스터가 사정거리 안이면 공격
+        if (_lockTartget != null)
+        {
+            float distance = (_destPos - transform.position).magnitude;
+            if (distance <= 1.0f)
+            {
+                State = PlayerState.Skill;
+                return;
+            }
+        }
+
+        // 이동
         Vector3 dir = _destPos - transform.position;
         if (dir.magnitude < 0.1f)
         {
-            _state = PlayerState.Idle;
+            State = PlayerState.Idle;
         }
         else
         {
@@ -75,7 +96,7 @@ public class PlayerController : MonoBehaviour
             if (Physics.Raycast(transform.position + Vector3.up * 0.5f, dir, 1.0f, LayerMask.GetMask("Block")))
             {
                 if (!Input.GetMouseButton(0))
-                    _state = PlayerState.Idle;
+                    State = PlayerState.Idle;
 
                 return;
             }
@@ -87,24 +108,28 @@ public class PlayerController : MonoBehaviour
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), 10.0f * Time.deltaTime);
             //transform.LookAt(_destPos);
         }
-
-        // 애니메이션
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", _stat.MoveSpeed);
     }
 
     void UpdateIdle()
     {
-        // 애니메이션
-        Animator anim = GetComponent<Animator>();
-        anim.SetFloat("speed", 0.0f);
+
+    }
+
+    void UpdateSkill()
+    {
+
+    }
+
+    void OnHitEvent()
+    {
+        Debug.Log("OnHitEvent");
+
+        State = PlayerState.Moving;
     }
 
     void Update()
     {
-        UpdateMouseCursor();
-
-        switch (_state)
+        switch (State)
         {
             case PlayerState.Die:
                 UpdateDie();
@@ -115,36 +140,9 @@ public class PlayerController : MonoBehaviour
             case PlayerState.Idle:
                 UpdateIdle();
                 break;
-        }
-    }
-
-    void UpdateMouseCursor()
-    {
-        if (Input.GetMouseButton(0))
-            return;
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, Camera.main.farClipPlane, _mask))
-        {
-            if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
-            {
-                if (_cursorType != CursorType.Attack)
-                {
-                    Cursor.SetCursor(_attackIcon, _attackPos, CursorMode.Auto);
-                    _cursorType = CursorType.Attack;
-                }
-                   
-            }
-            else
-            {
-                if (_cursorType != CursorType.Hand)
-                {
-                    Cursor.SetCursor(_handIcon, _handPos, CursorMode.Auto);
-                    _cursorType = CursorType.Hand;
-                } 
-            }    
+            case PlayerState.Skill:
+                UpdateSkill();
+                break;
         }
     }
 
@@ -185,7 +183,7 @@ public class PlayerController : MonoBehaviour
         //if (evt != Define.MouseEvent.Click)
         //    return;
 
-        if (_state == PlayerState.Die)
+        if (State == PlayerState.Die)
             return;
 
         RaycastHit hit;
@@ -200,7 +198,7 @@ public class PlayerController : MonoBehaviour
                     if (raycastHit)
                     {
                         _destPos = hit.point;
-                        _state = PlayerState.Moving;
+                        State = PlayerState.Moving;
 
                         if (hit.collider.gameObject.layer == (int)Define.Layer.Monster)
                             _lockTartget = hit.collider.gameObject;
@@ -216,9 +214,6 @@ public class PlayerController : MonoBehaviour
                     else if (raycastHit)
                         _destPos = hit.point;
                 }
-                break;
-            case Define.MouseEvent.PointerUp:
-                _lockTartget = null;
                 break;
         }
     }
