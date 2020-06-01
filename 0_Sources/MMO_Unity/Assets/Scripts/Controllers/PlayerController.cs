@@ -90,8 +90,7 @@ public class PlayerController : BaseController
         if (_lockTartget != null)
         {
             Stat targetStat = _lockTartget.GetComponent<Stat>();
-            int damage = Mathf.Abs(_stat.Attack - targetStat.Defence);
-            targetStat.Hp -= damage;
+            targetStat.OnAttacked(_stat);
         }
     }
     
